@@ -1,0 +1,24 @@
+{
+  "scripts": {
+    "build": "npx webpack --config ./views/www/build/server.js && npx webpack --config ./views/www/build/client.js",
+    "dev": "yarn build && cd server && node index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "vue": "^2.6.12",
+    "vue-router": "^3.4.9",
+    "vue-server-renderer": "^2.6.12"
+  },
+  "devDependencies": {
+    "file-loader": "^6.2.0",
+    "less-loader": "^7.2.0",
+    "url-loader": "^4.1.1",
+    "vue-loader": "^15.9.6",
+    "vue-template-compiler": "^2.6.12",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^4.3.0",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^5.7.3",
+    "webpack-node-externals": "^2.5.2"
+  }
+}
