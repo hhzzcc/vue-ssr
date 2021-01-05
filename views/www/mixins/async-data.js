@@ -1,27 +1,27 @@
 export default {
     created() {
+        const { asyncData, name } = this.$options;
         // 客户端将数据从window中提取，注入到组件中
         if (
             typeof window !== 'undefined' &&
-            window.__INITIAL_STATE__ &&
-            this.$options.name
+            name &&
+            asyncData
         ) {
-            const res = window.__INITIAL_STATE__[this.$options.name];
+            const res = window.__INITIAL_STATE__ && window.__INITIAL_STATE__[name];
             if (res) {
                 Object.assign(this, res);
             }
-            // else {
-            //     const { asyncData } = this.$options;
-            //     asyncData.call(this).then(res => {
-            //         // 数据合并到组件中
-            //         Object.assign(this, res);
-            //     }).catch(error => {
-            //         throw error;
-            //     });
-            // }
+            else {
+                asyncData.call(this).then(res => {
+                    // 数据合并到组件中
+                    Object.assign(this, res);
+                }).catch(error => {
+                    throw error;
+                });
+            }
         }
     },
-    async serverPrefetch() {
+    serverPrefetch() {
         const { asyncData } = this.$options;
         // 服务端数据预处理
         if (asyncData) {

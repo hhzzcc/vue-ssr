@@ -1,13 +1,15 @@
 {
   "scripts": {
-    "build:www": "cross-env NODE_ENV=development DIR=www npx webpack --config server/build/webpack-server-config.js && cross-env NODE_ENV=development DIR=www npx webpack --config server/build/webpack-client-config.js",
-    "start:www": "yarn build:www && cross-env NODE_ENV=production DIR=www node server/index.js",
+    "build:www": "cross-env NODE_ENV=development DIR=www npx webpack --config server/build/webpack-server-config.js && cross-env NODE_ENV=development DIR=www npx webpack --config server/build/webpack-client-config.js && cross-env NODE_ENV=development DIR=www npx webpack --config server/build/webpack-no-ssr-config.js ",
+    "build:master": "cross-env NODE_ENV=production DIR=www npx webpack --config server/build/webpack-server-config.js && cross-env NODE_ENV=production DIR=www npx webpack --config server/build/webpack-client-config.js && cross-env NODE_ENV=production DIR=www npx webpack --config server/build/webpack-no-ssr-config.js ",
+    "start:www": "yarn build:master && cross-env NODE_ENV=production DIR=www node server/index.js",
     "dev:www": "yarn build:www && cross-env NODE_ENV=development DIR=www nodemon -e js,ts server/index.js",
     "dev:wwwa": "yarn build:www && cross-env NODE_ENV=development DIR=www nodemon -e js,ts --inspect-brk=9229 server/index.js",
     "dev:debugger": "yarn build && node --inspect-brk=9229 server/index.js"
   },
   "license": "MIT",
   "dependencies": {
+    "clean-webpack-plugin": "^3.0.0",
     "cross-env": "^7.0.3",
     "css-loader": "^5.0.1",
     "express": "^4.17.1",
@@ -25,6 +27,7 @@
     "chokidar": "^3.4.3",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^4.5.1",
     "isomorphic-style-loader": "^5.1.0",
     "less-loader": "^7.2.0",
     "memory-fs": "^0.5.0",

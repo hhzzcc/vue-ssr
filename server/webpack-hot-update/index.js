@@ -10,6 +10,27 @@ const readFile = (fs, p) => {
 	}
 };
 
+const watchClientBundle = callBack => {
+	const config = require(path.resolve(__dirname, '../build/webpack-client-config.js'));
+	const clientCompiler = webpack(config);
+
+	const webpackDevMiddleware = require('webpack-dev-middleware')(clientCompiler, { publicPath: config.output.publicPath });
+	const webpackHotMiddleware = require('webpack-hot-middleware')(clientCompiler, { heartbeat: 2000 });
+	  
+  	clientCompiler.plugin('done', stats => {
+		stats = stats.toJson();
+		const mfs = clientCompiler.outputFileSystem;
+		const p = config.output.path + '/vue-ssr-client-manifest.json';
+		const bundle = JSON.parse(readFile(mfs, p));
+		callBack(bundle, mfs);
+	});
+
+	return {
+		webpackDevMiddleware,
+		webpackHotMiddleware
+	};
+};
+
 const watchServerBundle = callBack => {
 	const config = require(path.resolve(__dirname, '../build/webpack-server-config.js'));
 	const compiler = webpack(config);
@@ -25,33 +46,19 @@ const watchServerBundle = callBack => {
 	});
 };
 
-const watchClientBundle = callBack => {
-	const config = require(path.resolve(__dirname, '../build/webpack-client-config.js'));
-	config.entry = ['webpack-hot-middleware/client', config.entry];
-    config.plugins.push(new webpack.HotModuleReplacementPlugin());
-	const clientCompiler = webpack(config);
-
-	const webpackDevMiddleware = require('webpack-dev-middleware')(clientCompiler, { publicPath: config.output.publicPath });
-	const webpackHotMiddleware = require('webpack-hot-middleware')(clientCompiler, { heartbeat: 2000 });
-	  
-  	clientCompiler.plugin('done', stats => {
+const watchNoSsrBundle = callBack => {
+	const config = require(path.resolve(__dirname, '../build/webpack-no-ssr-config.js'));
+	const compiler = webpack(config);
+	const mfs = new MFS();
+	compiler.outputFileSystem = mfs;
+	compiler.watch({}, (err, stats) => {
+		if (err) throw err;
 		stats = stats.toJson();
-		const mfs = clientCompiler.outputFileSystem;
-		const p = config.output.path + '/vue-ssr-client-manifest.json';
-		// console.log(mfs);
-		const bundle = JSON.parse(readFile(mfs, p));
-
-		// mfs.readdir('/Users/lingmao/Desktop/vue-ssr/dist/www/client', (err, files) => {
-		// 	console.log(p);
-		// 	console.log(files);
-		// });
+		if (stats.errors.length) return;
+		const p = config.output.path + '/index.html';
+		const bundle = readFile(mfs, p);
 		callBack(bundle, mfs);
 	});
-
-	return {
-		webpackDevMiddleware,
-		webpackHotMiddleware
-	};
 };
 
 module.exports = function webpackHotUpdate(cb) {
@@ -59,13 +66,26 @@ module.exports = function webpackHotUpdate(cb) {
 	const {
 		webpackDevMiddleware,
 		webpackHotMiddleware
-	} = watchClientBundle((bundle, mfs) => {
-		cb({ clientBundle: bundle, mfs });
+	} = watchClientBundle((clientBundle, mfs) => {
+		cb({
+			clientBundle,
+			mfs
+		});
 	});
 
-	watchServerBundle((bundle, mfs) => {
-		cb({ serverBundle: bundle, mfs });
+	watchServerBundle((serverBundle, mfs) => {
+		cb({
+			serverBundle,
+			mfs
+		});
 	});
+
+	watchNoSsrBundle((noSsrBundle, mfs) => {
+		cb({
+			noSsrBundle,
+			mfs
+		});
+	})
 
 	return {
 		webpackDevMiddleware,

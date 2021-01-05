@@ -1,17 +1,14 @@
 const path = require('path');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
+const isProduction = process.env.NODE_ENV === 'production';
 const getBaseConfig = type => {
-    const isServer = type === 'server';
-	const isClient = !isServer;
-	const isProduction = process.env.NODE_ENV === 'production';
 
     return {
         mode: process.env.NODE_ENV,
         output: {
-			path: path.resolve(__dirname, `../../dist/${process.env.DIR}`, isServer ? 'server' : 'client'),
-			filename: '[name].js'
+			filename: '[name].js',
+			path: path.resolve(__dirname, `../../dist/${process.env.DIR}`),
 		},
 		module: {
 			rules: [
@@ -19,6 +16,19 @@ const getBaseConfig = type => {
 					test: /\.vue$/,
 					loader: 'vue-loader'
 				},
+			  	{
+					test: /\.(css|less)$/,
+					use: [
+					  'vue-style-loader',
+					  {
+						loader: "css-loader",
+						options: {
+							esModule: false  //默认为true 需要设置为false
+						}
+					  },
+					  'less-loader'
+					]
+			  	}
 				// {
 				// 	test: /\.js$/,
 				// 	loader: 'babel-loader'
@@ -45,7 +55,7 @@ const getBaseConfig = type => {
 			]
 		},
 		plugins: [
-			new VueLoaderPlugin()
+			new VueLoaderPlugin(),
 	  	],
     };
 };

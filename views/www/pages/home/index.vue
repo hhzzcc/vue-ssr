@@ -1,7 +1,6 @@
 <template>
     <div class="home">
         {{ text }}
-        aa
     </div>
 </template>
 
@@ -10,7 +9,7 @@ export default {
     name: 'home',
     data() {
         return {
-            text: 'welcome to VUE -- CSR',
+            text: null,
         };
     },
     async asyncData () {
