@@ -10,7 +10,7 @@ export function createRouter () {
             {
                 name: 'layout',
                 path: '/',
-                component: () => import(/* webpackChunkName: "layout" */ './layout/index.vue'),
+                component: () => import(/* webpackChunkName: "layout" */ '../layout/index.vue'),
                 children: [
                     {
                         name: 'home',
@@ -18,19 +18,15 @@ export function createRouter () {
                         meta: {
                             isCloseSSr: true
                         },
-                        component: () => import(/* webpackChunkName: "home" */ './pages/home/index.vue')
+                        component: () => import(/* webpackChunkName: "home" */ '../pages/home/index.vue')
                     },
                     {
                         name: '404',
                         path: '404',
-                        component: () => import(/* webpackChunkName: "404" */ './pages/404/index.vue')
+                        component: () => import(/* webpackChunkName: "404" */ '../pages/404/index.vue')
                     },
                 ]
             },
-            // {
-            //     path: '*',
-            //     redirect: '/404'
-            // }
         ]
     });
 };

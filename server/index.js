@@ -1,25 +1,52 @@
 const fs = require('fs');
+const path = require('path');
 const server = require('express')();
 const { createBundleRenderer } = require('vue-server-renderer');
+const webpackHotUpdate = require('./webpack-hot-update');
 
-const serverBundle = require('../dist/www/server/vue-ssr-server-bundle.json');
-const clientManifest = require('../dist/www/client/vue-ssr-client-manifest.json');
+let serverBundle = require(`../dist/${process.env.DIR}/server/vue-ssr-server-bundle.json`);
+let clientBundle = require(`../dist/${process.env.DIR}/client/vue-ssr-client-manifest.json`);
 
+const createRenderer = () => {
+    return createBundleRenderer(serverBundle, {
+        runInNewContext: false,
+        template: fs.readFileSync(path.resolve(__dirname, './template/index.html'), 'utf-8'),
+        clientManifest: clientBundle
+    });
+}; 
 
-const renderer = createBundleRenderer(serverBundle, {
-    runInNewContext: false,
-    template: fs.readFileSync('./template/index.html', 'utf-8'),
-    clientManifest
-});
+let renderer = createRenderer();
+let mfs = fs;
+let files = Object.keys(serverBundle.files);
 
-const files = Object.keys(serverBundle.files);
+// 本地开发启用热更新
+if (process.env.NODE_ENV === 'development') {
+    const {
+        webpackDevMiddleware,
+		webpackHotMiddleware
+    } = webpackHotUpdate(result => {
+        serverBundle = result.serverBundle || serverBundle;
+        clientBundle = result.clientBundle || clientBundle;
+        mfs = result.mfs || mfs;
+    
+        if (result.serverBundle) {
+            files = Object.keys(serverBundle.files);
+        }
+        
+        renderer = createRenderer(result);
+    });
+    server.use(webpackDevMiddleware);
+    server.use(webpackHotMiddleware);
+}
+
 
 server.get('*', (req, res) => {
-
     const fileKey = files.find(f => '/' + f === req.url);
+    // 访问文件直接访问文件
     if (fileKey) {
-        const filePath = '../dist/www/client/' + fileKey;
-        return res.end(fs.readFileSync(filePath, 'utf-8'));
+        const filePath = path.resolve(__dirname, `../dist/${process.env.DIR}/client/` + fileKey);
+        console.log(filePath);
+        return res.end(mfs.readFileSync(filePath, 'utf-8'));
     }
 
     const context = { url: req.url };
@@ -30,4 +57,7 @@ server.get('*', (req, res) => {
 
   });
   
-  server.listen(7777);
+  const port = 7777;
+  server.listen(port, () => {
+      console.log(`端口${port}启动成功`);
+  });

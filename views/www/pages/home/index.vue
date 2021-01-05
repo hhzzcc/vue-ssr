@@ -1,5 +1,8 @@
 <template>
-    <div>{{ count }}</div>
+    <div class="home">
+        {{ text }}
+        aa
+    </div>
 </template>
 
 <script>
@@ -7,17 +10,24 @@ export default {
     name: 'home',
     data() {
         return {
-            count: 0
+            text: 'welcome to VUE -- CSR',
         };
     },
-    mounted() {
-        console.log('aa');
-        this.timmer = setInterval(() => {
-            this.count ++;
-        }, 500);
-    },
-    beforeDestroy() {
-        clearInterval(this.timmer);
+    async asyncData () {
+        return {
+            text: 'welcome to VUE -- SSR'
+        };
     }
 }
 </script>
+
+<style lang="less">
+.home {
+    height: 100vh;
+    font-size: 50px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+</style>
