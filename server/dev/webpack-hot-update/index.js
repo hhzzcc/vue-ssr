@@ -10,14 +10,14 @@ const readFile = (fs, p) => {
 	}
 };
 
-const watchClientBundle = callBack => {
-	const config = require(path.resolve(__dirname, '../build/webpack-client-config.js'));
+const watchSsrClientBundle = (app, callBack) => {
+	const config = require(path.resolve(__dirname, '../../build/webpack-client-config.js'));
 	const clientCompiler = webpack(config);
 
 	const webpackDevMiddleware = require('webpack-dev-middleware')(clientCompiler, { publicPath: config.output.publicPath });
 	const webpackHotMiddleware = require('webpack-hot-middleware')(clientCompiler, { heartbeat: 2000 });
-	  
-  	clientCompiler.plugin('done', stats => {
+
+  	clientCompiler.hooks.done.tap('done', stats => {
 		stats = stats.toJson();
 		const mfs = clientCompiler.outputFileSystem;
 		const p = config.output.path + '/vue-ssr-client-manifest.json';
@@ -25,14 +25,12 @@ const watchClientBundle = callBack => {
 		callBack(bundle, mfs);
 	});
 
-	return {
-		webpackDevMiddleware,
-		webpackHotMiddleware
-	};
+	app.use(webpackDevMiddleware);
+	app.use(webpackHotMiddleware);
 };
 
-const watchServerBundle = callBack => {
-	const config = require(path.resolve(__dirname, '../build/webpack-server-config.js'));
+const watchSsrServerBundle = callBack => {
+	const config = require(path.resolve(__dirname, '../../build/webpack-server-config.js'));
 	const compiler = webpack(config);
 	const mfs = new MFS();
 	compiler.outputFileSystem = mfs;
@@ -42,12 +40,12 @@ const watchServerBundle = callBack => {
 		if (stats.errors.length) return;
 		const p = config.output.path + '/vue-ssr-server-bundle.json';
 		const bundle = JSON.parse(readFile(mfs, p));
-		callBack(bundle, mfs);
+		callBack(bundle);
 	});
 };
 
 const watchNoSsrBundle = callBack => {
-	const config = require(path.resolve(__dirname, '../build/webpack-no-ssr-config.js'));
+	const config = require(path.resolve(__dirname, '../../build/webpack-no-ssr-config.js'));
 	const compiler = webpack(config);
 	const mfs = new MFS();
 	compiler.outputFileSystem = mfs;
@@ -57,40 +55,16 @@ const watchNoSsrBundle = callBack => {
 		if (stats.errors.length) return;
 		const p = config.output.path + '/index.html';
 		const bundle = readFile(mfs, p);
-		callBack(bundle, mfs);
+		callBack(bundle);
 	});
 };
 
-module.exports = function webpackHotUpdate(cb) {
+module.exports = function webpackHotUpdate(app, cb) {
 
-	const {
-		webpackDevMiddleware,
-		webpackHotMiddleware
-	} = watchClientBundle((clientBundle, mfs) => {
-		cb({
-			clientBundle,
-			mfs
-		});
-	});
+	watchSsrClientBundle(app, (clientBundle, mfs) => cb({ clientBundle, mfs }));
+	watchSsrServerBundle(serverBundle => cb({ serverBundle }));
 
-	watchServerBundle((serverBundle, mfs) => {
-		cb({
-			serverBundle,
-			mfs
-		});
-	});
-
-	watchNoSsrBundle((noSsrBundle, mfs) => {
-		cb({
-			noSsrBundle,
-			mfs
-		});
-	})
-
-	return {
-		webpackDevMiddleware,
-		webpackHotMiddleware
-	};
+	watchNoSsrBundle(noSsrBundle => cb({ noSsrBundle }));
 };
 
 

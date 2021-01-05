@@ -1,8 +1,8 @@
 const path = require('path');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
-const isProduction = process.env.NODE_ENV === 'production';
-const getBaseConfig = type => {
+
+const getBaseConfig = () => {
 
     return {
         mode: process.env.NODE_ENV,
@@ -10,6 +10,17 @@ const getBaseConfig = type => {
 			filename: '[name].js',
 			path: path.resolve(__dirname, `../../dist/${process.env.DIR}`),
 		},
+		// optimization: {
+		// 	splitChunks: {
+		// 		cacheGroups: {
+		// 			vendors: {
+		// 				test: /[\\/]node_modules[\\/]/,
+		// 				name: 'vendors',
+		// 				chunks: 'all'
+		// 			}
+		// 		}
+		// 	},
+		// },
 		module: {
 			rules: [
 				{
@@ -23,35 +34,31 @@ const getBaseConfig = type => {
 					  {
 						loader: "css-loader",
 						options: {
-							esModule: false  //默认为true 需要设置为false
+							esModule: false
 						}
 					  },
 					  'less-loader'
 					]
-			  	}
-				// {
-				// 	test: /\.js$/,
-				// 	loader: 'babel-loader'
-				// },
-				// {
-				// 	test: /\.(css|less)$/,
-				// 	use: ['style-loader', 'css-loader', 'less-loader']
-				// },
-				// {
-				// 	test: /\.(png|jpg|gif|svg)$/,
-				// 	use: [
-				// 		{
-				// 			loader: 'url-loader',
-				// 			options: {
-				// 				limit: 4096
-				// 			}
-				// 		}
-				// 	]
-				// },
-				// {
-				// 	test: /\.(woff|woff2|eot|ttf|otf)$/,
-				// 	use: ['file-loader']
-				// }
+			  	},
+				{
+					test: /\.js$/,
+					loader: 'babel-loader'
+				},
+				{
+					test: /\.(png|jpg|gif|svg)$/,
+					use: [
+						{
+							loader: 'url-loader',
+							options: {
+								limit: 4096
+							}
+						}
+					]
+				},
+				{
+					test: /\.(woff|woff2|eot|ttf|otf)$/,
+					use: ['file-loader']
+				}
 			]
 		},
 		plugins: [

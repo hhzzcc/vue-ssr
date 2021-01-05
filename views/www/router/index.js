@@ -11,13 +11,11 @@ export function createRouter () {
                 name: 'layout',
                 path: '/',
                 component: () => import(/* webpackChunkName: "layout" */ '../layout/index.vue'),
+                redirect: '/home',
                 children: [
                     {
                         name: 'home',
                         path: 'home',
-                        meta: {
-                            isCloseSSr: true
-                        },
                         component: () => import(/* webpackChunkName: "home" */ '../pages/home/index.vue')
                     },
                     {
@@ -27,6 +25,10 @@ export function createRouter () {
                     },
                 ]
             },
+            {
+                path: '*',
+                redirect: '/404'
+            }
         ]
     });
 };

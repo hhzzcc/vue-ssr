@@ -3,17 +3,12 @@ const webpack = require('webpack');
 const { merge } = require('webpack-merge');
 const { getBaseConfig } = require('./webpack-base-config.js');
 const htmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const baseConfig = getBaseConfig('no-ssr');
-
+const baseConfig = getBaseConfig();
 const isProduction = process.env.NODE_ENV === 'production';
 const config = merge(baseConfig, {
     entry: path.resolve(__dirname, `../../views/${process.env.DIR}/entry-client.js`),
     plugins: [
-        // new MiniCssExtractPlugin({
-        //     filename: '[name].css'
-        // }),
         new htmlWebpackPlugin({
             filename: 'index.html',
             template: path.resolve(__dirname, '../template/index-no-ssr.html'),

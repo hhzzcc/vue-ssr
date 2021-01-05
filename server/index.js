@@ -1,13 +1,16 @@
 const fs = require('fs');
 const path = require('path');
-const server = require('express')();
+const app = require('express')();
 const { createBundleRenderer } = require('vue-server-renderer');
-const config = require('./build/webpack-client-config');
-const webpackHotUpdate = require('./webpack-hot-update');
+const webpackHotUpdate = require('./dev/webpack-hot-update');
+const port = 7777;
 
-let serverBundle = require(`../dist/${process.env.DIR}/vue-ssr-server-bundle.json`);
-let clientBundle = require(`../dist/${process.env.DIR}/vue-ssr-client-manifest.json`);
-let noSsrBundle = fs.readFileSync(path.resolve(__dirname, `../dist/${process.env.DIR}/index.html`), 'utf-8');
+let serverBundle;
+let clientBundle;
+let noSsrBundle;
+let renderer;
+let mfs;
+let files;
 
 const createRenderer = () => {
     return createBundleRenderer(serverBundle, {
@@ -15,35 +18,52 @@ const createRenderer = () => {
         template: fs.readFileSync(path.resolve(__dirname, './template/index.html'), 'utf-8'),
         clientManifest: clientBundle
     });
-}; 
+};
 
-let renderer = createRenderer();
-let mfs = fs;
-let files = clientBundle.all;
+// 控制台打印信息
+const log = () => {
+    setTimeout(() => { 
+        process.stdout.write(process.platform === 'win32' ? '\x1B[2J\x1B[0f' : '\x1B[2J\x1B[3J\x1B[H');
+        console.log('\x1B[32mDone Compiled successfully\x1B[0m');
+        console.log('You Can:');
+        console.log('- Open Ssr:      ' + `\x1B[36mhttp://localhost:${port}\x1B[0m`);
+        console.log('- Open No Ssr:   ' + `\x1B[36mhttp://localhost:${port}?__ssr=0\x1B[0m`);
+    }, 0);
+};
 
 // 本地开发启用热更新
 if (process.env.NODE_ENV === 'development') {
-    const {
-        webpackDevMiddleware,
-		webpackHotMiddleware
-    } = webpackHotUpdate(result => {
+    webpackHotUpdate(app, result => {
         serverBundle = result.serverBundle || serverBundle;
         clientBundle = result.clientBundle || clientBundle;
         noSsrBundle = result.noSsrBundle || noSsrBundle;
         mfs = result.mfs || mfs;
     
-        if (result.serverBundle) {
+        if (result.clientBundle) {
             files = clientBundle.all;
         }
-        
-        renderer = createRenderer(result);
+
+        if (serverBundle && clientBundle) {
+            files = clientBundle.all;
+            renderer = createRenderer();
+            log();
+        }
     });
-    server.use(webpackDevMiddleware);
-    server.use(webpackHotMiddleware);
+}
+// 线上使用打包文件
+else {
+    serverBundle = require(`../dist/${process.env.DIR}/vue-ssr-server-bundle.json`);
+    clientBundle = require(`../dist/${process.env.DIR}/vue-ssr-client-manifest.json`);
+    noSsrBundle = fs.readFileSync(path.resolve(__dirname, `../dist/${process.env.DIR}/index.html`), 'utf-8');
+    mfs = fs;
+    files = clientBundle.all;
+    renderer = createRenderer();
+    log();
 }
 
 
-server.get('*', (req, res) => {
+
+app.get('*', (req, res) => {
     const fileKey = files.find(f => '/' + f === req.url);
     // 访问文件
     if (fileKey) {
@@ -66,10 +86,6 @@ server.get('*', (req, res) => {
         }
         
     });
+});
 
-  });
-  
-  const port = 7777;
-  server.listen(port, () => {
-      console.log(`端口${port}启动成功`);
-  });
+app.listen(port);
