@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build:www": "cross-env NODE_ENV=production DIR=www npx webpack --config server/build/webpack-server-config.js && cross-env NODE_ENV=production DIR=www npx webpack --config server/build/webpack-client-config.js && cross-env NODE_ENV=production DIR=www npx webpack --config server/build/webpack-no-ssr-config.js ",
-    "start:www": "yarn build:www && cross-env NODE_ENV=production DIR=www node server/index.js",
+    "start:www": "cross-env NODE_ENV=production DIR=www node server/index.js",
     "dev:www": "cross-env NODE_ENV=development DIR=www nodemon -e js,ts server/index.js",
     "dev:debugger": "cross-env NODE_ENV=development DIR=www nodemon -e js,ts --inspect-brk=9229 server/index.js"
   },
