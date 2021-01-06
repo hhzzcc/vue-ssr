@@ -1,6 +1,7 @@
 const path = require('path');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
-
+const webpack = require('webpack');
+const env = require('./env');
 
 const getBaseConfig = () => {
 
@@ -63,6 +64,11 @@ const getBaseConfig = () => {
 		},
 		plugins: [
 			new VueLoaderPlugin(),
+			new webpack.DefinePlugin({
+				process: {
+					env
+				}
+			})
 	  	],
     };
 };

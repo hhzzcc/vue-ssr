@@ -22,7 +22,7 @@ const watchSsrClientBundle = (app, callBack) => {
 		const mfs = clientCompiler.outputFileSystem;
 		const p = config.output.path + '/vue-ssr-client-manifest.json';
 		const bundle = JSON.parse(readFile(mfs, p));
-		callBack(bundle, mfs);
+		callBack(bundle);
 	});
 
 	app.use(webpackDevMiddleware);
@@ -61,9 +61,8 @@ const watchNoSsrBundle = callBack => {
 
 module.exports = function webpackHotUpdate(app, cb) {
 
-	watchSsrClientBundle(app, (clientBundle, mfs) => cb({ clientBundle, mfs }));
+	watchSsrClientBundle(app, clientBundle => cb({ clientBundle }));
 	watchSsrServerBundle(serverBundle => cb({ serverBundle }));
-
 	watchNoSsrBundle(noSsrBundle => cb({ noSsrBundle }));
 };
 

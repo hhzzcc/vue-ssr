@@ -16,6 +16,9 @@ export default {
         return {
             text: 'welcome to VUE -- SSR'
         };
+    },
+    mounted() {
+        console.log(process.env.ENV);
     }
 }
 </script>

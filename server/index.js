@@ -9,8 +9,6 @@ let serverBundle;
 let clientBundle;
 let noSsrBundle;
 let renderer;
-let mfs;
-let files;
 
 const createRenderer = () => {
     return createBundleRenderer(serverBundle, {
@@ -37,14 +35,8 @@ if (process.env.NODE_ENV === 'development') {
         serverBundle = result.serverBundle || serverBundle;
         clientBundle = result.clientBundle || clientBundle;
         noSsrBundle = result.noSsrBundle || noSsrBundle;
-        mfs = result.mfs || mfs;
-    
-        if (result.clientBundle) {
-            files = clientBundle.all;
-        }
 
         if (serverBundle && clientBundle) {
-            files = clientBundle.all;
             renderer = createRenderer();
             log();
         }
@@ -55,26 +47,31 @@ else {
     serverBundle = require(`../dist/${process.env.DIR}/vue-ssr-server-bundle.json`);
     clientBundle = require(`../dist/${process.env.DIR}/vue-ssr-client-manifest.json`);
     noSsrBundle = fs.readFileSync(path.resolve(__dirname, `../dist/${process.env.DIR}/index.html`), 'utf-8');
-    mfs = fs;
-    files = clientBundle.all;
     renderer = createRenderer();
+    // 文件直接从dist中拿
+    app.use(function getFile(req, res, next) {
+        const fileName = req.url.replace(/^\//, '');
+        // 访问文件
+        if (serverBundle.files[fileName]) {
+            const filePath = path.resolve(__dirname, `../dist/${process.env.DIR}/` + fileName);
+            return res.end(fs.readFileSync(filePath, 'utf-8'));
+        }
+        next();
+    });
     log();
 }
 
-
-
-app.get('*', (req, res) => {
-    const fileKey = files.find(f => '/' + f === req.url);
-    // 访问文件
-    if (fileKey) {
-        const filePath = path.resolve(__dirname, `../dist/${process.env.DIR}/` + fileKey);
-        return res.end(mfs.readFileSync(filePath, 'utf-8'));
-    }
-
+// 关闭服务端渲染
+app.use(function noSsrRender(req, res, next) {
     if (req.url.includes('?__ssr=0') && noSsrBundle) {
         return res.end(noSsrBundle);
     }
+    next();
+});
 
+
+// 服务端渲染
+app.use(function ssrRedner(req, res) {
     const context = { url: req.url };
     renderer.renderToString(context, (err, html) => {
         if (err) {
@@ -84,8 +81,8 @@ app.get('*', (req, res) => {
             res.type('html');
             res.end(html);
         }
-        
     });
 });
 
 app.listen(port);
+
