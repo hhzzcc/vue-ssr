@@ -15,3 +15,12 @@ yarn build:www
 # 启动www项目
 yarn start:www
 ```
+
+## 文档服务
+```bash
+# 运行文档
+yarn docs:dev
+
+# 打包文档
+yarn docs:build
+```
