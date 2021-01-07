@@ -1,6 +1,6 @@
 const path = require('path');
 module.exports = {
-    // base: '/pages/gaoding/gaoding-material-lib/dist/',
+    base: process.env.NODE_ENV === 'production' ? '/pages/lingmao/vue-ssr/docs/dist/' : '/',
     dest: path.resolve(__dirname, '../dist'),
     themeConfig: {
         nav: [
