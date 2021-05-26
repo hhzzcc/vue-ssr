@@ -1,7 +1,6 @@
 服务端渲染项目
 
-本地开发
-
+开发
 ```
 yarn
 
@@ -15,15 +14,3 @@ yarn build:www
 
 yarn start:www
 ```
-
-## 文档服务
-```
-yarn docs:dev
-
-yarn docs:build
-```
-
-TODO:
-
-1、docker、jk对接<br>
-2、apollo回滚
