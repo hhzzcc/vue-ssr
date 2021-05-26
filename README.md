@@ -3,6 +3,7 @@
 - 支持ssr和csr相互切换
 - 支持asyncData钩子
 - 支持vue全家桶
+- 支持加入多项目，参考views/*
 
 ## Run Examples
 [演示地址](http://121.5.76.237:7777/)
