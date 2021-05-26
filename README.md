@@ -1,4 +1,11 @@
-服务端渲染项目
+## vue ssr框架
+- 支持热更新、less
+- 支持ssr和csr相互切换
+- 支持asyncData钩子
+- 支持vue全家桶
+
+## Run Examples
+[演示地址]|http://121.5.76.237:7777/
 
 开发
 ```
